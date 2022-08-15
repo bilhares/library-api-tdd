@@ -1,5 +1,7 @@
 package com.cursotdd.service.impl;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.cursotdd.exception.BusinessException;
@@ -24,6 +26,24 @@ public class BookServiceImpl implements BookService {
 		}
 
 		return repository.save(book);
+	}
+
+	@Override
+	public Optional<Book> getById(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void delete(Book book) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Book update(Book book) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
