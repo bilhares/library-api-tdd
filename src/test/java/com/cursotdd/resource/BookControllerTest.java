@@ -29,12 +29,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.cursotdd.dto.BookDto;
 import com.cursotdd.exception.BusinessException;
 import com.cursotdd.model.entity.Book;
+import com.cursotdd.resources.BookController;
 import com.cursotdd.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
-@WebMvcTest
+@WebMvcTest(controllers = BookController.class)
 @AutoConfigureMockMvc
 class BookControllerTest {
 
