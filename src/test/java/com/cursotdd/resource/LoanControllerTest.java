@@ -1,10 +1,12 @@
 package com.cursotdd.resource;
 
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.hamcrest.Matchers;
@@ -17,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -25,6 +30,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.cursotdd.dto.LoanDto;
+import com.cursotdd.dto.LoanFilterDto;
+import com.cursotdd.dto.ReturnedLoanDto;
 import com.cursotdd.exception.BusinessException;
 import com.cursotdd.model.entity.Book;
 import com.cursotdd.model.entity.Loan;
@@ -100,5 +107,54 @@ public class LoanControllerTest {
 
 		mvc.perform(request).andExpect(status().isBadRequest()).andExpect(jsonPath("errors", Matchers.hasSize(1)))
 				.andExpect(jsonPath("errors[0]").value("livro ja emprestado"));
+	}
+
+	@Test
+	@DisplayName("Deve retornar um livro")
+	public void returnBookTest() throws Exception {
+		ReturnedLoanDto dto = ReturnedLoanDto.builder().returned(true).build();
+		String json = new ObjectMapper().writeValueAsString(dto);
+		Loan loan = Loan.builder().id(1l).build();
+		BDDMockito.given(loanService.getById(Mockito.anyLong())).willReturn(Optional.of(loan));
+
+		mvc.perform(MockMvcRequestBuilders.patch(LOAN_API.concat("/1")).accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON).content(json)).andExpect(status().isOk());
+
+		verify(loanService, Mockito.times(1)).update(loan);
+	}
+
+	@Test
+	@DisplayName("Deve retornar 404 quando devolver um livro sem emprestimo")
+	public void returnInexistentBookTest() throws Exception {
+		ReturnedLoanDto dto = ReturnedLoanDto.builder().returned(true).build();
+		String json = new ObjectMapper().writeValueAsString(dto);
+
+		BDDMockito.given(loanService.getById(Mockito.anyLong())).willReturn(Optional.empty());
+
+		mvc.perform(MockMvcRequestBuilders.patch(LOAN_API.concat("/1")).accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON).content(json)).andExpect(status().isNotFound());
+
+		verify(loanService, Mockito.never()).update(Mockito.any(Loan.class));
+	}
+
+	@Test
+	@DisplayName("Deve filtrar emprestimos")
+	public void findLoanTest() throws Exception {
+		Long id = 1l;
+
+		Book book = Book.builder().id(2l).isbn("123").build();
+		Loan loan = Loan.builder().id(id).book(book).customer("zé").loanDate(LocalDate.now()).returned(true).build();
+
+		BDDMockito.given(loanService.find(Mockito.any(LoanFilterDto.class), Mockito.any(Pageable.class)))
+				.willReturn(new PageImpl<Loan>(Collections.singletonList(loan), PageRequest.of(0, 100), 1));
+
+		String queryString = String.format("?customer=%s&isbn=%s&page=0&size=100", loan.getCustomer(), book.getIsbn());
+
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(LOAN_API.concat(queryString))
+				.accept(MediaType.APPLICATION_JSON);
+
+		mvc.perform(request).andExpect(status().isOk()).andExpect(jsonPath("content", Matchers.hasSize(1)))
+				.andExpect(jsonPath("totalElements").value(1)).andExpect(jsonPath("pageable.pageSize").value(100))
+				.andExpect(jsonPath("pageable.pageNumber").value(0));
 	}
 }

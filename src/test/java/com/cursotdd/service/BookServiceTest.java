@@ -1,6 +1,7 @@
 package com.cursotdd.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 
 import java.util.Collections;
 import java.util.List;
@@ -167,6 +168,31 @@ public class BookServiceTest {
 		assertThat(result.getContent()).isEqualTo(lista);
 		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
 		assertThat(result.getPageable().getPageSize()).isEqualTo(10);
+	}
+
+	@Test
+	@DisplayName("Deve obter livro por isbn")
+	public void findBookByInexistentIsbnTest() {
+		Book book = createBook();
+		Mockito.when(repository.findByIsbn(book.getIsbn())).thenReturn(Optional.of(book));
+
+		Optional<Book> returnedBook = service.getBookByIsbn(book.getIsbn());
+
+		assertThat(returnedBook.isPresent()).isTrue();
+		assertThat(returnedBook.get().getIsbn()).isEqualTo(book.getIsbn());
+
+		Mockito.verify(repository, times(1)).findByIsbn(book.getIsbn());
+	}
+
+	@Test
+	@DisplayName("Deve retornar vazio ao obter livro por isbn inexistente")
+	public void findBookByIsbnTest() {
+		Book book = createBook();
+		Mockito.when(repository.findByIsbn(book.getIsbn())).thenReturn(Optional.empty());
+
+		Optional<Book> returnedBook = service.getBookByIsbn(book.getIsbn());
+
+		assertThat(returnedBook.isPresent()).isFalse();
 	}
 
 	private Book createBook() {

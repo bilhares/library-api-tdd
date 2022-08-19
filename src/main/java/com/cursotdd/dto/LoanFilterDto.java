@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoanDto {
+public class LoanFilterDto {
 
-	private Long id;
-	private String isbn;
+	private String idbn;
 	private String customer;
-	private BookDto book;
 }
