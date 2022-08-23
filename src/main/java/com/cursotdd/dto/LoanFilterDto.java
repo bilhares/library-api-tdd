@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoanFilterDto {
 
-	private String idbn;
+	private String isbn;
 	private String customer;
 }

@@ -5,6 +5,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.Assertions;
@@ -14,9 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.cursotdd.dto.LoanFilterDto;
 import com.cursotdd.exception.BusinessException;
 import com.cursotdd.model.entity.Book;
 import com.cursotdd.model.entity.Loan;
@@ -100,6 +106,27 @@ public class LoanServiceTest {
 
 		assertThat(updatedLoan.getReturned()).isTrue();
 		verify(repository).save(loanToUpdate);
+	}
+
+	@Test
+	@DisplayName("Deve filtrar emprestimos pelas propriedades")
+	public void findLoanTest() {
+		Loan loan = createLoan(1l);
+		LoanFilterDto dto = LoanFilterDto.builder().customer(loan.getCustomer()).isbn("123").build();
+
+		PageRequest pageRequest = PageRequest.of(0, 10);
+		List<Loan> lista = Collections.singletonList(loan);
+		Page<Loan> page = new PageImpl<Loan>(lista, pageRequest, 1);
+
+		Mockito.when(repository.findByBookIsbnOrCustomer(Mockito.anyString(), Mockito.anyString(),
+				Mockito.any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+		Page<Loan> result = service.find(dto, pageRequest);
+
+		assertThat(result.getTotalElements()).isEqualTo(1);
+		assertThat(result.getContent()).isEqualTo(lista);
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(10);
 	}
 
 	private Loan createLoan(long id) {
