@@ -31,6 +31,7 @@ import com.cursotdd.exception.BusinessException;
 import com.cursotdd.model.entity.Book;
 import com.cursotdd.resources.BookController;
 import com.cursotdd.service.BookService;
+import com.cursotdd.service.LoanService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(SpringExtension.class)
@@ -46,6 +47,9 @@ class BookControllerTest {
 
 	@MockBean
 	BookService service;
+
+	@MockBean
+	LoanService loanService;
 
 	@Test
 	@DisplayName("Deve criar um livro com sucesso")

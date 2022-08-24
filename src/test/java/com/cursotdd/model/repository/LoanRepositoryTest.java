@@ -3,6 +3,7 @@ package com.cursotdd.model.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ public class LoanRepositoryTest {
 
 	@Test
 	@DisplayName("deve buscar emprestimo por isbn ou customer")
-	public void findByBookIsbnOrCustomer() {
+	public void findByBookIsbnOrCustomerTest() {
 
 		Book book = Book.builder().author("autor").isbn("123").title("titulo").build();
 		Loan loan = Loan.builder().book(book).customer("Fulano").loanDate(LocalDate.now()).build();
@@ -62,5 +63,33 @@ public class LoanRepositoryTest {
 		assertThat(result.getPageable().getPageSize()).isEqualTo(10);
 		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
 		assertThat(result.getTotalElements()).isEqualTo(1);
+	}
+
+	@Test
+	@DisplayName("Deve obter emprestimos atrasados 3 dias")
+	public void findByLoanDateLessThanAndNotReturnedTest() {
+		Book book = Book.builder().author("autor").isbn("123").title("titulo").build();
+		Loan loan = Loan.builder().book(book).customer("Fulano").loanDate(LocalDate.now().minusDays(5)).build();
+
+		entityManager.persist(book);
+		entityManager.persist(loan);
+
+		List<Loan> result = repository.findByLoanDateLessThanAndNotReturned(LocalDate.now().minusDays(4));
+
+		assertThat(result).hasSize(1).contains(loan);
+	}
+
+	@Test
+	@DisplayName("Deve retornar vazio quando nao existir emprestimos atrasados")
+	public void notFindByLoanDateLessThanAndNotReturnedTest() {
+		Book book = Book.builder().author("autor").isbn("123").title("titulo").build();
+		Loan loan = Loan.builder().book(book).customer("Fulano").loanDate(LocalDate.now()).build();
+
+		entityManager.persist(book);
+		entityManager.persist(loan);
+
+		List<Loan> result = repository.findByLoanDateLessThanAndNotReturned(LocalDate.now().minusDays(4));
+
+		assertThat(result).isEmpty();
 	}
 }
