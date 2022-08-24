@@ -28,8 +28,12 @@ import com.cursotdd.model.entity.Loan;
 import com.cursotdd.service.BookService;
 import com.cursotdd.service.LoanService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 @RestController
 @RequestMapping("/api/books")
+@Api("Book Api")
 public class BookController {
 
 	private BookService service;
@@ -44,6 +48,7 @@ public class BookController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@ApiOperation("CREATE A BOOK")
 	public BookDto create(@RequestBody @Valid BookDto dto) {
 		Book entity = modelMapper.map(dto, Book.class);
 		entity = service.save(entity);
@@ -51,6 +56,7 @@ public class BookController {
 	}
 
 	@GetMapping("{id}")
+	@ApiOperation("OBTAINS A BOOK DETAILS BY ID")
 	public BookDto get(@PathVariable Long id) {
 		return service.getById(id).map(book -> modelMapper.map(book, BookDto.class))
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -58,12 +64,14 @@ public class BookController {
 
 	@DeleteMapping("{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@ApiOperation("DELETE BOOK")
 	public void delete(@PathVariable Long id) {
 		Book book = service.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		service.delete(book);
 	}
 
 	@PutMapping("{id}")
+	@ApiOperation("UPDATE A BOOK INFOS")
 	public BookDto update(@PathVariable Long id, @RequestBody @Valid BookDto dto) {
 		return service.getById(id).map(book -> {
 			book.setAuthor(dto.getAuthor());
@@ -74,6 +82,7 @@ public class BookController {
 	}
 
 	@GetMapping
+	@ApiOperation("OBTAINS A BOOK BY FILTERS")
 	public Page<BookDto> find(BookDto dto, Pageable pageRequest) {
 		Book filter = modelMapper.map(dto, Book.class);
 		Page<Book> result = service.find(filter, pageRequest);
@@ -83,6 +92,7 @@ public class BookController {
 	}
 
 	@GetMapping("{id}/loans")
+	@ApiOperation("OBTAINS LOANS FROM BOOK")
 	public Page<LoanDto> loansByBook(@PathVariable Long id, Pageable pageable) {
 		Book book = service.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		Page<Loan> result = loanService.getLoansByBook(book, pageable);
