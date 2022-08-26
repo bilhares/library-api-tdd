@@ -52,7 +52,7 @@ public class BookServiceTest {
 
 		Book savedBook = service.save(book);
 
-		assertThat(savedBook.getId()).isNull();;
+		assertThat(savedBook.getId()).isNotNull();
 		assertThat(savedBook.getIsbn()).isEqualTo(book.getIsbn());
 		assertThat(savedBook.getTitle()).isEqualTo(book.getTitle());
 		assertThat(savedBook.getAuthor()).isEqualTo(book.getAuthor());
