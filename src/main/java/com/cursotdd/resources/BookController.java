@@ -30,10 +30,12 @@ import com.cursotdd.service.LoanService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/books")
 @Api("Book Api")
+@Slf4j
 public class BookController {
 
 	private BookService service;
@@ -50,6 +52,7 @@ public class BookController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@ApiOperation("CREATE A BOOK")
 	public BookDto create(@RequestBody @Valid BookDto dto) {
+		log.info("creating a book for isbn: {}", dto.getIsbn());
 		Book entity = modelMapper.map(dto, Book.class);
 		entity = service.save(entity);
 		return modelMapper.map(entity, BookDto.class);
@@ -58,6 +61,7 @@ public class BookController {
 	@GetMapping("{id}")
 	@ApiOperation("OBTAINS A BOOK DETAILS BY ID")
 	public BookDto get(@PathVariable Long id) {
+		log.info("getting a book for id: {}", id);
 		return service.getById(id).map(book -> modelMapper.map(book, BookDto.class))
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 	}
@@ -66,6 +70,7 @@ public class BookController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ApiOperation("DELETE BOOK")
 	public void delete(@PathVariable Long id) {
+		log.info("deleting a book for id: {}", id);
 		Book book = service.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		service.delete(book);
 	}
@@ -73,6 +78,7 @@ public class BookController {
 	@PutMapping("{id}")
 	@ApiOperation("UPDATE A BOOK INFOS")
 	public BookDto update(@PathVariable Long id, @RequestBody @Valid BookDto dto) {
+		log.info("updating a book for id: {}", id);
 		return service.getById(id).map(book -> {
 			book.setAuthor(dto.getAuthor());
 			book.setTitle(dto.getTitle());
@@ -84,6 +90,7 @@ public class BookController {
 	@GetMapping
 	@ApiOperation("OBTAINS A BOOK BY FILTERS")
 	public Page<BookDto> find(BookDto dto, Pageable pageRequest) {
+		log.info("get book by filters");
 		Book filter = modelMapper.map(dto, Book.class);
 		Page<Book> result = service.find(filter, pageRequest);
 		List<BookDto> list = result.getContent().stream().map(entity -> modelMapper.map(entity, BookDto.class))
@@ -94,6 +101,7 @@ public class BookController {
 	@GetMapping("{id}/loans")
 	@ApiOperation("OBTAINS LOANS FROM BOOK")
 	public Page<LoanDto> loansByBook(@PathVariable Long id, Pageable pageable) {
+		log.info("getting loans from book id: {}", id);
 		Book book = service.getById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		Page<Loan> result = loanService.getLoansByBook(book, pageable);
 
