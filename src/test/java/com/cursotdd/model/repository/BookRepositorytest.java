@@ -18,7 +18,7 @@ import com.cursotdd.model.entity.Book;
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @DataJpaTest
-public class BookRepositoryTest {
+public class BookRepositorytest {
 
 	@Autowired
 	TestEntityManager entityManager;
