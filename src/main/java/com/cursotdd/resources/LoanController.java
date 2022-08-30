@@ -28,6 +28,8 @@ import com.cursotdd.model.entity.Loan;
 import com.cursotdd.service.BookService;
 import com.cursotdd.service.LoanService;
 
+import io.swagger.annotations.ApiOperation;
+
 @RestController
 @RequestMapping("/api/loans")
 public class LoanController {
@@ -44,6 +46,7 @@ public class LoanController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@ApiOperation("CREATE A LOAN")
 	public Long create(@RequestBody LoanDto dto) {
 		Book book = bookService.getBookByIsbn(dto.getIsbn())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
